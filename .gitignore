@@ -1,0 +1,17 @@
+# Python bytecode (compiled files)
+__pycache__/
+*.py[cod]
+
+# Virtual Environments
+venv/
+env/
+.env/
+
+# IDE settings (VS Code or PyCharm)
+.vscode/
+.idea/
+
+# Large data or distribution files
+*.log
+dist/
+build/
