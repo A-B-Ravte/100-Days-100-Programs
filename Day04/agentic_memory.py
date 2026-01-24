@@ -1,3 +1,18 @@
+'''
+The Task: Create a class called AIAgent.
+
+Attributes: name (str) and memory (a list).
+
+Methods:
+
+add_memory(task_name, status): Adds a dictionary like {"task": "search", "status": "success"} to the list.
+
+get_history(): Returns the full list of memories.
+
+clear_memory(): Empties the list.
+
+Why this matters: This is how frameworks like LangChain or AutoGPT manage "short-term memory."
+'''
 
 
 class AgenticAI:
@@ -23,8 +38,8 @@ class AgenticAI:
     def clear_memory(self):
         self.memory = []
         print(f"Memory has been clear for {self.name}")
-        
 
+                          
 if __name__ == "__main__":
     researcher = AgenticAI("Researhcer")
     history = researcher.get_history()
