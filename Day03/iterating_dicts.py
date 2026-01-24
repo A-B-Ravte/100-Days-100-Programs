@@ -21,25 +21,26 @@ def get_nested_value(data_dict: dict,key_path: str) :
             print(f"key {key} not found ")  
     return current_location          
 
-data_dict = {
-    "name": {    
-        "agent_settings": {
-            "model_config": {
-                "llm_type": "gpt-4",
-                "parameters": {
-                    "temperature": 0.7,
-                    "max_tokens": 2048
+if __name__ == "__main__":
+    data_dict = {
+        "name": {    
+            "agent_settings": {
+                "model_config": {
+                    "llm_type": "gpt-4",
+                    "parameters": {
+                        "temperature": 0.7,
+                        "max_tokens": 2048
+                    }
+                },
+                "retry_policy": {
+                    "max_attempts": 3
                 }
-            },
-            "retry_policy": {
-                "max_attempts": 3
             }
-        }
-    }    
-}
+        }    
+    }
 
-key_path = "agent_settings.model_config.parameters.max_tokens"
+    key_path = "agent_settings.model_config.parameters.max_tokens"
 
-value = get_nested_value(data_dict, key_path)
+    value = get_nested_value(data_dict, key_path)
 
-print(value)
+    print(value)
