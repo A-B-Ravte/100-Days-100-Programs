@@ -13,10 +13,12 @@ class AgenticAI:
         self.memory.append(record)
         print(f"memory added for {self.name} : {task_name}")
 
-    def get_history(self)-> list: 
+    def get_history(self, only_completed: bool = True)-> list: 
         #when you want only completed task list 
-        completed = [item for item in self.memory if item['status']=='Completed']
-        return completed
+        if only_completed:
+            return [item for item in self.memory if item['status']=='Completed']
+            
+        return self.memory
 
     def clear_memory(self):
         self.memory = []
