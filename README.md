@@ -9,6 +9,7 @@ Concepts: Data Structures, Exception Handling, OOP, Agentic State Management, Re
 Goal: Mastering production-grade code for AI Agents and Cloud Automation.
 
 📅 Daily Progress Logs
+
 Day 01: The Logic Warm-up
 Program 1: Prime Number Filter with optimized square-root logic.
 
