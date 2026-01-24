@@ -14,7 +14,9 @@ class AgenticAI:
         print(f"memory added for {self.name} : {task_name}")
 
     def get_history(self)-> list: 
-        return self.memory
+        #when you want only completed task list 
+        completed = [item for item in self.memory if item['status']=='Completed']
+        return completed
 
     def clear_memory(self):
         self.memory = []
