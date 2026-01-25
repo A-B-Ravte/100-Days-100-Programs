@@ -7,11 +7,14 @@ The Goal: Use a single List Comprehension to get: ["processed_event1.json", "pro
 '''
 
 def batch_processor(raw_files:list)-> list :
-    json_files = ["processed_" + file.split('/')[-1] for file in raw_files if file.rsplit('.')[-1].lower() == 'json']
+    try:
+        return ["processed_" + file.split('/')[-1] for file in raw_files if str(file).lower().endswith('.json')]
+    except (TypeError, AttributeError) as e:
+        print(f"enable to handle file {e}")
+        return []
     
-    return json_files        
-
 if __name__ == "__main__":
+
     raw_files = ["/home/user/logs/event1.json", "/data/config.yaml", "/var/log/event2.json", "/tmp/temp_data.txt", "direct_file.json"]
     json_files = batch_processor(raw_files)
 
