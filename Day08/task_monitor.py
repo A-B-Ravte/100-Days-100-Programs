@@ -46,6 +46,8 @@ import logging
 # Configure basic logging for our "Agent"
 logging.basicConfig(level=logging.INFO)
 
+VALID_STATUS = ['success', 'failed', 'running']
+
 def summarize_tasks(tasks: List[Dict]) -> Dict:
     summary = { "total_tasks": 0, 
             "success":  0, 
@@ -54,39 +56,28 @@ def summarize_tasks(tasks: List[Dict]) -> Dict:
             "average_execution_time":  0, 
             "long_running_tasks":  [],
         }
-    
+    total_time = 0
     for task in tasks:
-        if "task_id" not in task or "status" not in task or "execution_time" not in task:
-            logging.info(f"{task} is invalid")
-            continue
-        if not isinstance(task['task_id'], str):
-            logging.info(f"Invalid type of task_id for {task}, It should be string only.")
-            continue
-        if not isinstance(task['execution_time'], int):
-            logging.info(f"Invalid type of execution_time for {task}, It should be integer only")
-            continue
-        #print(f'task status is {task["status"]}')
-        if task['status'].lower() not in ["success", "failed", "running"]:
-            logging.info(f"Invalid status of {task}, Status must be one of this ['success', 'failed', 'running']")
-            continue
-        
-        summary['total_tasks'] = summary.get('total_tasks') + 1
+        try : 
+            id = task['task_id']
+            status = task['status'].lower()
+            execution_time = task['execution_time']
 
-        if task['status'] == 'success':
-            summary['success'] = summary.get('success') + 1   
+            if not isinstance(id, str) or not isinstance(execution_time, int) or status not in VALID_STATUS :
+                raise ValueError(f"Invalid Task {task}")
+            
+            summary['total_tasks'] += 1
+            summary[status] += 1   
+            total_time += execution_time
 
-        if task['status'] == 'failed':
-            summary['failed'] = summary.get('failed') + 1    
+            if execution_time > 10:
+                summary['long_running_tasks'].append(id)   
 
-        if task['status'] == 'running':
-            summary['running'] = summary.get('running') + 1   
+        except Exception as e:
+            logging.error(f"Skipping invalid task {task}")    
 
-        if task['execution_time'] > 10:
-            summary['long_running_tasks'].append(task['task_id'])   
-
-        summary['average_execution_time'] = summary.get('average_execution_time') + task['execution_time']
-    if tasks:        
-        summary['average_execution_time'] = summary['average_execution_time'] / summary['total_tasks']
+    if summary['total_tasks'] > 0:        
+        summary['average_execution_time'] = total_time / summary['total_tasks']
     
     return summary
 
