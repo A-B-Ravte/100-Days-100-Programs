@@ -39,22 +39,22 @@ Handle edge cases properly
 
 Time complexity should be O(n)
 '''
-from typing import List
+from typing import List, Dict
 
 def analyzer(words :List[str]) -> dict :
     
-    frequency = {}
+    frequency: Dict[str, int] = {}
     
     for word in words:
-        if word == '':
+        if not isinstance(word, str):
             continue
-        if word.lower() not in frequency.keys():
-            frequency.update({word.lower():1})
+        key = word.strip().lower()
+        if not key:
+            continue
         else:    
-            frequency[word.lower()] = frequency[word.lower()] + 1
-    sorted_frequency = dict(sorted(frequency.items(), key=lambda item: item[1], reverse=True))        
+            frequency[key] = frequency.get(key, 0) + 1
+    return dict(sorted(frequency.items(), key=lambda item: item[1], reverse=True))        
 
-    return sorted_frequency   
 
 words = ["AI", "agent", "ai", "", "Agent", "python", "AI", "python"]
 sorted_frequency = analyzer(words)
