@@ -52,9 +52,8 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 def retry_summary(tasks: list[dict], max_retries: int = 2) -> dict:
-    summary = {}
-    summary['retry_count'] = {}
-    summary['blocked_tasks'] = set()
+    retry_count = {}
+    succeeded = set()
 
     VALID_STATUS = ['success', "failed"]
 
@@ -62,24 +61,34 @@ def retry_summary(tasks: list[dict], max_retries: int = 2) -> dict:
         try:
             status = task['status'].lower()
             id = task['task_id']
-            if status not in VALID_STATUS:
-                raise ValueError(f"Invalid Status '{status}' for task id {id},\nAllowed valid status is this {VALID_STATUS}")
+            if not isinstance(id, str) or status not in VALID_STATUS:
+                raise ValueError(f"Invalid status or task_id type")
         
-
+            if id in succeeded:
+                continue
+            
             if status == "failed":
-                summary['retry_count'][id] = summary['retry_count'].get(id, 0) + 1
-                if summary['retry_count'][id] >= max_retries:
-                    summary['blocked_tasks'].add(id)
-            else:
-                if id in summary['blocked_tasks']:
-                    summary['blocked_tasks'].remove(id)
+                retry_count[id] = retry_count.get(id, 0) + 1
+                
+            elif status == "success":
+                succeeded.add(id)
                 logging.info(f"Task {id} is Successfully completed.") 
-
+                        
+                       
         except (KeyError, ValueError, TypeError) as e:
             logging.error(f"Invalid type error found as {e}")
 
-    return summary                   
-                
+    final_retry_counts = {k: v for k, v in retry_count.items() if v > 0}
+    
+    blocked_tasks = [
+        t_id for t_id, count in final_retry_counts.items()
+        if count >= max_retries and t_id not in succeeded
+    ]
+
+    return {
+        "retry_count": final_retry_counts,
+        "blocked_tasks": blocked_tasks
+    }        
     
 
 if __name__ == "__main__":
