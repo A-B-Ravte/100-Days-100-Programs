@@ -80,33 +80,24 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 def schedule_tasks(tasks: list[dict]) -> list[str]:
-    try:
-        
-        priority_base_data = {}
-        for task in tasks:
+
+    valid_tasks = []
+    
+    for task in tasks:
+        try:
             t_id, priority, created_at = task['task_id'], task['priority'], task['created_at']
 
             if not isinstance(t_id, str) or not isinstance(priority, int) or not isinstance(created_at, int):
-                logging.info(f"Skipping Invalid Input type for task {task}")
-                continue
+                raise ValueError("Invalid task fields")
             
-            priority_base_data[priority] = priority_base_data.get(priority, {})
-            priority_base_data[priority][t_id] = created_at
+            valid_tasks.append(task)
+            
+        except (TypeError, KeyError, ValueError) as e:
+            logging.error(f"Skipping invalid task: {e}")
            
-        if priority_base_data == {}:
-            return []
-        print(priority_base_data)
-        priority_base_data = dict(sorted(priority_base_data.items(), key=lambda item: item[0], reverse=False))
-        ordered_tasks = []
-        for key, data in priority_base_data.items():
-            data = dict(sorted(data.items(), key=lambda item: item[1], reverse=False))
-            for id, v in data.items():
-                ordered_tasks.append(id)
+    valid_tasks.sort(key = lambda x:(x['priority'], x['created_at']))
     
-    except (TypeError, KeyError, ValueError) as e:
-        logging.error(f"Invalid input task caught error {e}")
-
-    return ordered_tasks
+    return [task['task_id'] for task in valid_tasks]
 
 if __name__=="__main__":
     tasks = [
