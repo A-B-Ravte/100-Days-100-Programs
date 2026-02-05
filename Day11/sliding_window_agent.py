@@ -109,9 +109,18 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 def count_recent_events(events : List[Dict], window_size : int) -> Dict:
-    latest_timestamp = events[-1]['timestamp']
-    window_start = latest_timestamp - window_size
+
+    if not events or window_size <= 0:
+        return {}
     
+    try:
+        latest_timestamp = events[-1]['timestamp']
+        if not isinstance(latest_timestamp, int):
+            return {}
+    except(KeyError, TypeError) as e:
+        logging.error(f"Invalid event found error as {e}")    
+    
+    window_start = latest_timestamp - window_size
     memory_count = {}
 
     for event in events:
@@ -120,12 +129,14 @@ def count_recent_events(events : List[Dict], window_size : int) -> Dict:
             event_type = event['event_type']
 
             if not isinstance(timestamp, int) or not isinstance(event_type, str):
-                raise ValueError(f"Invalid event found {event}")
+                logging.info(f"Skipping Invalid event {event}")
+                continue
 
             if timestamp>=window_start:
                 memory_count[event_type] = memory_count.get(event_type, 0) + 1
         except (TypeError, ValueError, KeyError) as e:
             logging.error(f"Invalid event found error as {e}")
+            continue
 
     return memory_count
 
