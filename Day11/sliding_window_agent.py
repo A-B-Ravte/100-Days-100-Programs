@@ -108,38 +108,45 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-def count_recent_events(events : List[Dict], window_size : int) -> Dict:
-
+def count_recent_events(events: List[Dict], window_size: int) -> Dict:
+    # Edge case: rules specifically mentioned window_size <= 0
     if not events or window_size <= 0:
         return {}
-    
-    try:
-        latest_timestamp = events[-1]['timestamp']
-        if not isinstance(latest_timestamp, int):
-            return {}
-    except(KeyError, TypeError) as e:
-        logging.error(f"Invalid event found error as {e}")    
-    
+
+    # Step 1: Find the latest valid timestamp efficiently
+    # Since they are sorted, check from the end of the list
+    latest_timestamp = None
+    for event in reversed(events):
+        ts = event.get("timestamp")
+        if isinstance(ts, int):
+            latest_timestamp = ts
+            break
+            
+    if latest_timestamp is None:
+        return {}
+
     window_start = latest_timestamp - window_size
     memory_count = {}
 
-    for event in events:
+    # Step 2: Iterate backwards and break early when outside the window
+    for event in reversed(events):
         try:
-            timestamp = event['timestamp']
-            event_type = event['event_type']
+            ts = event["timestamp"]
+            etype = event["event_type"]
 
-            if not isinstance(timestamp, int) or not isinstance(event_type, str):
-                logging.info(f"Skipping Invalid event {event}")
+            if not isinstance(ts, int) or not isinstance(etype, str):
                 continue
 
-            if timestamp>=window_start:
-                memory_count[event_type] = memory_count.get(event_type, 0) + 1
-        except (TypeError, ValueError, KeyError) as e:
-            logging.error(f"Invalid event found error as {e}")
+            if ts >= window_start:
+                memory_count[etype] = memory_count.get(etype, 0) + 1
+            else:
+                # OPTIMIZATION: Since list is sorted, we can stop entirely 
+                # once we fall below the window_start.
+                break 
+        except (KeyError, TypeError):
             continue
 
     return memory_count
-
 
 if __name__ == "__main__":
 
