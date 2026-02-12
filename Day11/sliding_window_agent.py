@@ -113,7 +113,6 @@ def count_recent_events(events: List[Dict], window_size: int) -> Dict:
     if not events or window_size <= 0:
         return {}
 
-    # Step 1: Find the latest valid timestamp efficiently
     # Since they are sorted, check from the end of the list
     latest_timestamp = None
     for event in reversed(events):
@@ -128,7 +127,7 @@ def count_recent_events(events: List[Dict], window_size: int) -> Dict:
     window_start = latest_timestamp - window_size
     memory_count = {}
 
-    # Step 2: Iterate backwards and break early when outside the window
+    
     for event in reversed(events):
         try:
             ts = event["timestamp"]
