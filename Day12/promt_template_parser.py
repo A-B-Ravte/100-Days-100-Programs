@@ -37,25 +37,28 @@ import bleach
 import re
 from typing import Dict
 
-#reusable parser for each payload 
-def parse_payload(payload, matches):
-    for key in matches:
-        payload[key] = payload.get(key, "[Not Added]")
-        if payload[key] == None:
-            payload[key] = "[Not Added]"
-        payload[key] = bleach.clean(payload[key], tags=[], strip=True)    
+#reusable parser for each value 
+def sanitize_value(value):
+    if value == None:
+        return "[Not Added]"
+    
+    clean_text = bleach.clean(str(value), tags=[], strip=True)    
            
-    return payload    
+    return clean_text.strip()    
 
 def prompt_parser(template: str, payload: Dict)-> str :
-    matches = re.findall(r"\{([^{}]+)\}", template)
+    placeholders = re.findall(r"\{(\w+)\}", template)
 
-    payload = parse_payload(payload, matches)
-
-    for key, value in payload.items():
-        temp = "{"+ key + "}"
-        template = template.replace(temp, value)
-    return template
+    clean_mapping = {}
+    for key in placeholders:
+        raw_value = payload.get(key)
+        clean_mapping[key] = sanitize_value(raw_value)
+    
+    try:
+        return template.format_map(clean_mapping)
+    except KeyError as e:
+        # Fallback in case a placeholder didn't get caught
+        return f"Error: Missing key {e} in template orchestration."
 
 if __name__ == "__main__":
     Template = "System: You are a {role}. Task: {task}. User: {user_name}."
