@@ -46,20 +46,28 @@ def context_guard(text: str, max_tokens: int)-> dict:
     original_token_count = len(text) / 4
     count = original_token_count
     
-    while True:
-        if count > max_tokens :
-            head = text[0:int(count)]
-            tail = text[-int(count):-1]
-            truncated_text = head + tail
-            count = len(truncated_text) / 4
-            is_truncated = True
-        else :
-            break    
+    char_limit = max_tokens * 4
+    original_char_count = len(text)
+    original_token_count = original_char_count / 4
 
-    if is_truncated:
-        return {"final_text": truncated_text, "original_text_count":original_token_count, "was_truncated":is_truncated, "current_token_count": count}    
-    else:
-        return {"final_text": text, "original_text_count":original_token_count, "was_truncated":is_truncated, "current_token_count": original_token_count}        
+    if original_token_count <= max_tokens:
+        return {"final_text": text, "original_text_count":original_token_count, "was_truncated":False, "current_token_count": original_token_count}        
+
+    head_size = int(char_limit * 0.25)
+    tail_size = int(char_limit * 0.25)
+
+    head_text = text[:head_size]
+    tail_text = text[-tail_size:] if tail_size > 0 else ""
+    filler = "... [TRUNCATED] ..."
+
+    final_text = f"{head_text}{filler}{tail_text}" 
+    
+    return {
+            "final_text": final_text,
+            "original_token_count": original_token_count,
+            "was_truncated": True,
+            "current_token_count": len(final_text) / 4
+        }
 
 if __name__  == "__main__":
     text = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwx"
